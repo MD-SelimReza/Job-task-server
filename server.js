@@ -11,7 +11,8 @@ app.use(express.json());
 app.use(cors());
 
 /** api routes */
-app.use('/api/users', require('./routes/userRoutes'));
+app.use('/', require('./routes/userRoutes'));
+app.use('/', require('./routes/productRoutes'));
 
 // Connect to the database
 connectDB();
