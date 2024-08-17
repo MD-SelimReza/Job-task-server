@@ -17,18 +17,29 @@ const productSchema = new Schema({
     price: {
         type: Number,
         required: [true, 'Price is required'],
-        min: 0,
+        min: 150,
     },
     category: {
         type: String,
         required: [true, 'Category is required'],
         enum: [
+            'Personal Care',
+            'Clothing',
             'Electronics',
-            'Sports & Outdoors',
-            'Home & Kitchen',
-            'Home Appliances',
-            'Apparel',
-            'Home Security',
+            'Outdoor',
+            'Accessories',
+            'Home',
+            'Fitness',
+        ],
+    },
+    brand: {
+        type: String,
+        required: [true, 'Brand is required'],
+        enum: [
+            'GreenLiving',
+            'EcoWear',
+            'SoundMax',
+            'BrightHome',
         ],
     },
     ratings: {

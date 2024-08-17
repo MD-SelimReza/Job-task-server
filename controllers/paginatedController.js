@@ -1,41 +1,47 @@
 const asyncHandler = require('express-async-handler');
 const { getDataFromDatabase, getTotalItemCount } = require('./productController'); // Import functions from your model
 
-// Pagination Controller
+// Pagination, Filtering, Searching, and Sorting Controller
 const getPaginatedData = asyncHandler(async (req, res) => {
     try {
-        // Extract pagination parameters from the request query
-        const page = parseInt(req.query.page, 10) || 1; // Default to page 1 if not provided
-        const limit = parseInt(req.query.limit, 10) || 3; // Default to 3 items per page if not provided
+        const page = parseInt(req.query.page, 10) || 1;
+        const limit = parseInt(req.query.limit, 10) || 10;
+        const category = req.query.category || "";
+        const brand = req.query.brand || "";
+        const priceRange = req.query.priceRange ? req.query.priceRange.split(',').map(Number) : [];
+        const searchTerm = req.query.searchTerm || "";
+        const sortOrder = req.query.sortOrder || "date-desc"; // Default sorting by newest
 
-        // Validate pagination parameters
         if (page < 1 || limit < 1) {
             return res.status(400).json({ error: 'Page and limit must be greater than 0' });
         }
 
-        // Calculate the starting index for the query
         const startIndex = (page - 1) * limit;
 
-        // Fetch data from the database using pagination parameters
-        const data = await getDataFromDatabase(startIndex, limit);
+        // Fetch filtered, searched, and sorted data from the database
+        const data = await getDataFromDatabase({
+            startIndex,
+            limit,
+            category,
+            brand,
+            // priceRange,
+            searchTerm,
+            sortOrder
+        });
 
-        // Fetch the total number of items in the collection (for calculating total pages)
-        const totalCount = await getTotalItemCount();
-        // Calculate the total number of pages
+        // Fetch the total number of filtered and searched items in the collection
+        const totalCount = await getTotalItemCount({ category, brand, priceRange, searchTerm });
         const totalPages = Math.ceil(totalCount / limit);
 
-        // Construct the paginated response
         const paginatedResponse = {
-            page: page,
-            limit: limit,
-            totalPages: totalPages,
-            totalCount: totalCount,
-            data: data,
+            page,
+            limit,
+            totalPages,
+            totalCount,
+            data,
         };
-        // Send the paginated response
         res.status(200).json(paginatedResponse);
     } catch (error) {
-        // Handle any errors
         console.error('Error fetching paginated data:', error);
         res.status(500).json({ error: 'An error occurred while fetching data' });
     }
