@@ -62,19 +62,56 @@ const deleteProduct = asyncHandler(async (req, res) => {
 });
 
 // List all products
-const listProducts = asyncHandler(async (req, res) => {
+// const listProducts = asyncHandler(async (req, res) => {
+//     try {
+//         const products = await Product.find();
+//         res.status(200).json(products);
+//     } catch (error) {
+//         res.status(500).json({ error: 'Server error', details: error.message });
+//     }
+// });
+
+/**
+ * Fetches paginated data from the database.
+ * @param {number} startIndex - The starting index for pagination.
+ * @param {number} limit - The number of items per page.
+ * @returns {Promise<Array>} - The paginated data.
+ */
+const getDataFromDatabase = asyncHandler(async (startIndex, limit) => {
     try {
-        const products = await Product.find();
-        res.status(200).json(products);
+        // Fetch products from the database with pagination
+        const products = await Product.find()
+            .skip(startIndex)   // Skip the number of items according to the startIndex
+            .limit(limit)       // Limit the number of items returned
+            .exec();            // Execute the query
+        return products;
     } catch (error) {
-        res.status(500).json({ error: 'Server error', details: error.message });
+        console.error('Error fetching paginated data:', error);
+        throw new Error('Error fetching paginated data');
     }
 });
+
+/**
+ * Gets the total number of items in the collection.
+ * @returns {Promise<number>} - The total count of items.
+ */
+const getTotalItemCount = asyncHandler(async () => {
+    try {
+        // Count the total number of products in the database
+        const count = await Product.countDocuments().exec(); // Use countDocuments for accuracy
+        return count;
+    } catch (error) {
+        console.error('Error counting items:', error);
+        throw new Error('Error counting items');
+    }
+});
+
 
 module.exports = {
     createProduct,
     getProductById,
     updateProduct,
     deleteProduct,
-    listProducts,
+    getDataFromDatabase,
+    getTotalItemCount,
 };
